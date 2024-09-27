@@ -5,6 +5,9 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.IMU;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp(name = "Green Gobbler Studio")
 @Config
@@ -12,7 +15,8 @@ public class GreenGobbler extends LinearOpMode {
 
     private GobblerCommon common;
     private FtcDashboard dashboard;
-
+    private IMU imu;
+    private AbsoluteGyro gyro;
     double rot;
     double vx;
     double vy;
@@ -37,17 +41,25 @@ public class GreenGobbler extends LinearOpMode {
         if (opModeIsActive()) {
             while (opModeIsActive()) {
                 controls();
+                double relativeYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+                double absoluteYaw = gyro.calculate(relativeYaw);
+                telemetry.addData("Relative Yaw", relativeYaw);
+                telemetry.addData("Absolute Yaw", absoluteYaw);
                 common.run(isStopRequested());
                 sendTelemetry();
             }
         }
     }
 
+
+
     /**
      * Describe this function...
      */
     private void initialize() {
+        imu = hardwareMap.get(IMU.class, "imu");
         common = new GobblerCommon(hardwareMap);
+        gyro = new AbsoluteGyro();
         common.initialize();
         dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
